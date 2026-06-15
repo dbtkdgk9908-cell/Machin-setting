@@ -203,6 +203,12 @@
   .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
   .form-grid.three{grid-template-columns:1fr 1fr 1fr;}
 
+  /* 수정 X 고정값 스타일 */
+  .val-wrap{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+  .no-edit-tag{font-size:9px;font-weight:700;color:#c0392b;font-family:var(--mono);letter-spacing:.04em;display:none;margin-top:2px;line-height:1;}
+  .val.no-edit{background:#ffe8e8 !important;border-color:#e05555 !important;color:#8b1a1a !important;}
+  .val.no-edit[readonly]{background:#ffe8e8 !important;}
+
   footer{text-align:center;padding:30px 20px 50px;font-family:var(--mono);font-size:11px;letter-spacing:.15em;color:#555b62;}
 
   @media(max-width:540px){
@@ -354,6 +360,15 @@ const MODAL_KEYS = [
   'delay_clamp','delay_lock','cap_time'
 ];
 
+// 이 값들은 모든 품목 공통 고정값 — 기본값과 같으면 빨간색 표시
+const NO_EDIT_DEFAULTS = {
+  signal_filter:    '0.30',
+  transport_speed:  '15.00',
+  delay_split:      '0.50',
+  cap_clamp_retreat:'0.20',
+  smoke_tight:      '0.02',
+};
+
 // ── State ──
 let products = [];
 let activeId = null;
@@ -504,6 +519,35 @@ function renderPanels() {
     mainArea.appendChild(section);
   });
   if (isEditing) applyEditState(true);
+  applyNoEditStyles();
+}
+
+function applyNoEditStyles() {
+  mainArea.querySelectorAll('input.val[data-key]').forEach(inp => {
+    const key = inp.dataset.key;
+    if (!(key in NO_EDIT_DEFAULTS)) return;
+    // 이미 wrap 됐으면 스킵
+    if (inp.parentElement.classList.contains('val-wrap')) {
+      updateNoEdit(inp); return;
+    }
+    const wrap = document.createElement('div');
+    wrap.className = 'val-wrap';
+    inp.parentNode.insertBefore(wrap, inp);
+    wrap.appendChild(inp);
+    const tag = document.createElement('span');
+    tag.className = 'no-edit-tag';
+    tag.textContent = '수정 X';
+    wrap.appendChild(tag);
+    updateNoEdit(inp);
+    inp.addEventListener('input', e => updateNoEdit(e.target));
+  });
+}
+
+function updateNoEdit(inp) {
+  const isDefault = NO_EDIT_DEFAULTS[inp.dataset.key] === inp.value.trim();
+  inp.classList.toggle('no-edit', isDefault);
+  const tag = inp.parentElement.querySelector('.no-edit-tag');
+  if (tag) tag.style.display = isDefault ? 'block' : 'none';
 }
 
 function row(key, label, sub, s) {
