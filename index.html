@@ -491,8 +491,8 @@ function renderPanels() {
           <div class="hmi-title">자동</div>
         </div>
         <div class="hmi-bar">
-          <div class="field">신호 필터링 <input class="val" type="text" inputmode="decimal" data-key="signal_filter" value="${esc(s.signal_filter||'0.00')}" readonly></div>
-          <div class="field">수송 속도 <input class="val" type="text" inputmode="decimal" data-key="transport_speed" value="${esc(s.transport_speed||'0.00')}" readonly></div>
+          <div class="field">신호 필터링 ${valWrap('signal_filter', s.signal_filter||'0.00')}</div>
+          <div class="field">수송 속도 ${valWrap('transport_speed', s.transport_speed||'0.00')}</div>
         </div>
         <div class="hmi-grid">
           <div class="hmi-col">
@@ -519,41 +519,34 @@ function renderPanels() {
     mainArea.appendChild(section);
   });
   if (isEditing) applyEditState(true);
-  applyNoEditStyles();
-}
-
-function applyNoEditStyles() {
+  // 동적 업데이트용 이벤트 리스너 연결
   mainArea.querySelectorAll('input.val[data-key]').forEach(inp => {
-    const key = inp.dataset.key;
-    if (!(key in NO_EDIT_DEFAULTS)) return;
-    // 이미 wrap 됐으면 스킵
-    if (inp.parentElement.classList.contains('val-wrap')) {
-      updateNoEdit(inp); return;
+    if (inp.dataset.key in NO_EDIT_DEFAULTS) {
+      inp.addEventListener('input', e => updateNoEdit(e.target));
     }
-    const wrap = document.createElement('div');
-    wrap.className = 'val-wrap';
-    inp.parentNode.insertBefore(wrap, inp);
-    wrap.appendChild(inp);
-    const tag = document.createElement('span');
-    tag.className = 'no-edit-tag';
-    tag.textContent = '수정 X';
-    wrap.appendChild(tag);
-    updateNoEdit(inp);
-    inp.addEventListener('input', e => updateNoEdit(e.target));
   });
 }
 
 function updateNoEdit(inp) {
   const isDefault = NO_EDIT_DEFAULTS[inp.dataset.key] === inp.value.trim();
   inp.classList.toggle('no-edit', isDefault);
-  const tag = inp.parentElement.querySelector('.no-edit-tag');
-  if (tag) tag.style.display = isDefault ? 'block' : 'none';
+  const tag = inp.closest('.val-wrap')?.querySelector('.no-edit-tag');
+  if (tag) tag.style.display = isDefault ? '' : 'none';
+}
+
+function valWrap(key, val, extraClass='') {
+  const isNoEdit = (key in NO_EDIT_DEFAULTS) && val === NO_EDIT_DEFAULTS[key];
+  return `<div class="val-wrap">
+    <input class="val${isNoEdit?' no-edit':''} ${extraClass}" type="text" inputmode="decimal" data-key="${key}" value="${esc(val)}" readonly>
+    ${key in NO_EDIT_DEFAULTS ? `<span class="no-edit-tag"${isNoEdit?'':' style="display:none"'}>수정 X</span>` : ''}
+  </div>`;
 }
 
 function row(key, label, sub, s) {
+  const val = s[key] || '0.00';
   return `<div class="hmi-row">
     <span class="lab"><span class="orig">${esc(label)}</span>${sub ? `<small>${esc(sub)}</small>` : ''}</span>
-    <input class="val" type="text" inputmode="decimal" data-key="${key}" value="${esc(s[key]||'0.00')}" readonly>
+    ${valWrap(key, val)}
   </div>`;
 }
 
