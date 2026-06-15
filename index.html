@@ -394,6 +394,7 @@ async function initFirebase() {
     const app = initializeApp(firebaseConfig);
     db = getFirestore(app);
     await seedIfEmpty();
+    await fixNames();
     startListener();
   } catch(e) {
     setFbStatus('error');
@@ -409,6 +410,21 @@ async function seedIfEmpty() {
     DEFAULTS.forEach(p => batch.set(doc(collection(db,'products')), { ...p, createdAt: new Date() }));
     await batch.commit();
   }
+}
+
+async function fixNames() {
+  const nameMap = { '홈 디퓨저': '차량용', '차량용': '리필', '리필': '홈' };
+  const snap = await getDocs(collection(db,'products'));
+  const batch = writeBatch(db);
+  let changed = false;
+  snap.docs.forEach(d => {
+    const name = d.data().name;
+    if (nameMap[name]) {
+      batch.update(doc(db,'products',d.id), { name: nameMap[name] });
+      changed = true;
+    }
+  });
+  if (changed) await batch.commit();
 }
 
 function startListener() {
