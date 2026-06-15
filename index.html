@@ -206,8 +206,7 @@
   /* 수정 X 고정값 스타일 */
   .val-wrap{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
   .no-edit-tag{font-size:9px;font-weight:700;color:#c0392b;font-family:var(--mono);letter-spacing:.04em;display:none;margin-top:2px;line-height:1;}
-  .val.no-edit{background:#ffe8e8 !important;border-color:#e05555 !important;color:#8b1a1a !important;}
-  .val.no-edit[readonly]{background:#ffe8e8 !important;}
+  input.val.no-edit,input.val.no-edit[readonly]{background:#ffd5d5 !important;border-color:#e05555 !important;color:#7a1a1a !important;box-shadow:0 0 0 1px rgba(224,85,85,.2) !important;}
 
   footer{text-align:center;padding:30px 20px 50px;font-family:var(--mono);font-size:11px;letter-spacing:.15em;color:#555b62;}
 
@@ -409,7 +408,7 @@ async function initFirebase() {
     const app = initializeApp(firebaseConfig);
     db = getFirestore(app);
     await seedIfEmpty();
-    await fixNames();
+    await fixNamesByMl();
     startListener();
   } catch(e) {
     setFbStatus('error');
@@ -427,15 +426,16 @@ async function seedIfEmpty() {
   }
 }
 
-async function fixNames() {
-  const nameMap = { '홈 디퓨저': '차량용', '차량용': '리필', '리필': '홈' };
+async function fixNamesByMl() {
+  // ml 기준으로 정확한 이름 고정 (한 번만 실행해도 멱등)
+  const mlToName = { '520ml': '차량용', '230ml': '리필', '1050ml': '홈' };
   const snap = await getDocs(collection(db,'products'));
   const batch = writeBatch(db);
   let changed = false;
   snap.docs.forEach(d => {
-    const name = d.data().name;
-    if (nameMap[name]) {
-      batch.update(doc(db,'products',d.id), { name: nameMap[name] });
+    const { ml, name } = d.data();
+    if (mlToName[ml] && name !== mlToName[ml]) {
+      batch.update(doc(db,'products',d.id), { name: mlToName[ml] });
       changed = true;
     }
   });
