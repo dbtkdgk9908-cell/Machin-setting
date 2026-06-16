@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>충진기 세팅값 — 스톤오일 가이드</title>
+<title>충진기 선택</title>
 <style>
   :root{
     --bg:#15181c;
@@ -11,8 +11,6 @@
     --panel-edge:#2c3138;
     --steel:#aab2bb;
     --hmi-cyan:#5fd6e8;
-    --hmi-green:#7cd96f;
-    --accent:#ff5d3b;
     --text:#eef1f4;
     --muted:#8b939c;
     --mono:'JetBrains Mono','SFMono-Regular',Consolas,monospace;
@@ -27,593 +25,101 @@
     font-family:'Noto Sans KR','Pretendard',-apple-system,sans-serif;
     min-height:100vh;
     -webkit-font-smoothing:antialiased;
+    display:flex;
+    flex-direction:column;
   }
-  header{padding:48px 20px 28px;text-align:center;border-bottom:1px solid #2a2f36;}
+  header{padding:60px 20px 30px;text-align:center;position:relative;}
   .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.28em;color:var(--hmi-cyan);text-transform:uppercase;margin-bottom:14px;}
   h1{font-size:clamp(28px,6vw,42px);margin:0 0 10px;font-weight:800;letter-spacing:-0.01em;}
   h1 span{color:var(--hmi-cyan);}
   .sub{color:var(--muted);font-size:15px;max-width:520px;margin:0 auto;line-height:1.6;}
 
-  .fb-status{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:12px;}
-  .fb-dot{width:7px;height:7px;border-radius:50%;background:#555;transition:background .4s;}
-  .fb-dot.connected{background:var(--hmi-green);box-shadow:0 0 6px var(--hmi-green);}
-  .fb-dot.error{background:var(--accent);}
-
-  .toolbar{max-width:760px;margin:34px auto 0;padding:0 20px;display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;}
-  .toolbar-left{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;}
-  .toolbar-right{display:flex;align-items:center;gap:8px;}
-  .selector-label{font-family:var(--mono);font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
-
-  .dropdown{position:relative;}
-  .dropdown-trigger{
-    font-family:'Noto Sans KR',sans-serif;background:var(--panel);border:1px solid var(--panel-edge);
-    color:var(--text);padding:12px 18px;border-radius:8px;font-size:14px;cursor:pointer;
-    display:flex;align-items:center;gap:14px;min-width:200px;justify-content:space-between;transition:border-color .15s;
+  main{
+    flex:1;
+    max-width:760px;
+    width:100%;
+    margin:20px auto 60px;
+    padding:0 20px;
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:20px;
   }
-  .dropdown-trigger:hover{border-color:var(--hmi-cyan);}
-  .dropdown-trigger .ml{font-size:17px;font-weight:700;color:var(--hmi-cyan);margin-right:8px;}
-  .dropdown-trigger .chev{color:var(--muted);font-size:12px;transition:transform .2s;}
-  .dropdown.open .dropdown-trigger .chev{transform:rotate(180deg);}
-  .dropdown.open .dropdown-trigger{border-color:var(--hmi-cyan);}
-  .dropdown-menu{
-    position:absolute;top:calc(100% + 6px);left:0;min-width:100%;
-    background:var(--panel);border:1px solid var(--panel-edge);border-radius:8px;
-    z-index:20;box-shadow:0 12px 30px -10px rgba(0,0,0,.6);
-    display:none;max-height:280px;overflow-y:auto;
+  .card{
+    background:var(--panel);
+    border:1px solid var(--panel-edge);
+    border-radius:16px;
+    padding:40px 24px;
+    text-align:center;
+    text-decoration:none;
+    color:var(--text);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:14px;
+    transition:all .2s ease;
   }
-  .dropdown.open .dropdown-menu{display:block;}
-  .dropdown-item{
-    width:100%;text-align:left;background:none;border:none;border-bottom:1px solid var(--panel-edge);
-    color:var(--steel);font-family:'Noto Sans KR',sans-serif;font-size:14px;
-    padding:12px 18px;cursor:pointer;display:flex;align-items:center;transition:background .15s;
+  .card:hover{
+    border-color:var(--hmi-cyan);
+    transform:translateY(-4px);
+    box-shadow:0 16px 40px -16px rgba(95,214,232,.25);
   }
-  .dropdown-item:last-child{border-bottom:none;}
-  .dropdown-item .ml{font-size:17px;font-weight:700;color:var(--text);margin-right:10px;}
-  .dropdown-item:hover{background:rgba(95,214,232,.08);}
-  .dropdown-item.active{color:var(--text);background:rgba(95,214,232,.06);}
-  .dropdown-item.active .ml{color:var(--hmi-cyan);}
-
-  .btn{
-    font-family:var(--mono);background:var(--panel);border:1px solid var(--panel-edge);
-    color:var(--steel);padding:12px 20px;border-radius:8px;font-size:13px;
-    letter-spacing:.08em;cursor:pointer;transition:all .15s;white-space:nowrap;
+  .card .icon{
+    font-size:44px;
+    width:84px;height:84px;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(95,214,232,.08);
+    border:1px solid var(--panel-edge);
+    border-radius:50%;
   }
-  .btn:hover{border-color:var(--hmi-cyan);color:var(--text);}
-  .btn.primary{background:linear-gradient(180deg,rgba(95,214,232,.15),rgba(95,214,232,.03));border-color:var(--hmi-cyan);color:var(--hmi-cyan);}
-  .btn.editing{background:linear-gradient(180deg,rgba(255,93,59,.15),rgba(255,93,59,.03));border-color:var(--accent);color:var(--text);}
-  .btn.danger{border-color:#44393a;color:#8a6e71;}
-  .btn.danger:hover{border-color:var(--accent);color:var(--accent);}
-
-  main{max-width:760px;margin:32px auto 60px;padding:0 20px;}
-  .panel{display:none;animation:fadeIn .35s ease;}
-  .panel.active{display:block;}
-  @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
-
-  .state-box{text-align:center;padding:60px 20px;color:var(--muted);}
-  .state-box .icon{font-size:44px;margin-bottom:14px;}
-  .state-box h2{font-size:18px;margin:0 0 8px;color:var(--steel);}
-  .state-box p{font-size:14px;line-height:1.7;margin:0;}
-  .state-box code{
-    display:inline-block;margin-top:14px;padding:10px 16px;
-    background:var(--panel);border:1px solid var(--panel-edge);border-radius:6px;
-    font-family:var(--mono);font-size:12px;color:var(--hmi-cyan);text-align:left;line-height:1.8;
+  .card h2{font-size:20px;font-weight:800;margin:0;}
+  .card p{font-size:13px;color:var(--muted);margin:0;line-height:1.6;}
+  .card .tag{
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:.15em;
+    color:var(--hmi-cyan);
+    text-transform:uppercase;
+    background:rgba(95,214,232,.1);
+    border:1px solid rgba(95,214,232,.25);
+    border-radius:999px;
+    padding:4px 12px;
   }
 
-  .hmi-screen{
-    background:linear-gradient(135deg,#5fe0ee 0%,#4fc9e0 100%);
-    border-radius:10px;padding:18px;
-    box-shadow:0 0 0 10px #14181c,0 0 0 11px #3a4047,0 20px 50px -20px rgba(0,0,0,.7);
-    font-family:'Noto Sans KR',sans-serif;color:#1a2230;
-  }
-  .hmi-top{display:flex;justify-content:center;align-items:center;gap:16px;margin-bottom:12px;position:relative;}
-  .hmi-title{font-size:26px;font-weight:900;letter-spacing:.05em;}
-  .hmi-go{
-    position:absolute;left:0;background:#bfe89b;border:2px solid #6fae4f;border-radius:6px;
-    padding:6px 14px;font-weight:800;font-size:14px;display:flex;align-items:center;gap:6px;white-space:nowrap;
-  }
-  .hmi-go::before{content:"▶";font-size:11px;}
-  .hmi-bar{
-    display:flex;gap:10px;background:rgba(255,255,255,.45);border-radius:8px;
-    padding:8px 14px;margin-bottom:10px;font-size:13px;font-weight:700;justify-content:center;flex-wrap:wrap;
-  }
-  .hmi-bar .field{display:flex;align-items:center;gap:6px;}
-  .hmi-bar .val,.hmi-row .val{
-    font-family:var(--mono);color:#1a2230;background:#fdfdf2;border:1px solid #c9c9b0;
-    border-radius:4px;-webkit-appearance:none;appearance:none;text-align:center;
-    transition:border-color .15s,box-shadow .15s;
-  }
-  .hmi-bar .val:focus,.hmi-row .val:focus{
-    outline:none;border-color:#2a9bb8;box-shadow:0 0 0 2px rgba(42,155,184,.25);background:#fff;
-  }
-  .hmi-bar .val[readonly],.hmi-row .val[readonly]{cursor:default;}
-  .hmi-bar .val:not([readonly]),.hmi-row .val:not([readonly]){
-    border-color:#ff5d3b;box-shadow:0 0 0 1px rgba(255,93,59,.15);cursor:text;
-  }
-  .hmi-bar .val{padding:1px 8px;width:64px;font-size:13px;}
-  .hmi-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:start;}
-  .hmi-col{
-    background:#d9e98a;border:1px solid #b9cf63;border-radius:6px;
-    padding:12px;display:flex;flex-direction:column;gap:16px;height:100%;min-width:0;
-  }
-  .hmi-col-header{
-    text-align:center;font-size:12px;font-weight:900;letter-spacing:.04em;color:#3a4a1f;
-    background:#c3da6e;border:1px solid #a9c451;border-radius:5px;padding:5px 2px;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  }
-  .hmi-row{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;font-weight:700;line-height:1.35;}
-  .hmi-row .lab{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;}
-  .hmi-row .lab .orig{white-space:normal;word-break:keep-all;}
-  .hmi-row .lab small{font-size:10px;font-weight:500;color:#5d6e3c;letter-spacing:.01em;white-space:normal;word-break:keep-all;}
-  .hmi-row .val{padding:4px 6px;font-weight:800;font-size:14px;white-space:nowrap;flex-shrink:0;width:58px;}
-
-  .ml-badge{text-align:center;margin-top:18px;}
-  .ml-badge span{
-    display:inline-flex;align-items:baseline;gap:8px;font-family:var(--mono);
-    font-size:12px;letter-spacing:.08em;color:var(--muted);
-    background:var(--panel);border:1px solid var(--panel-edge);border-radius:999px;padding:7px 18px;
-  }
-  .ml-badge b{color:var(--hmi-cyan);font-size:15px;letter-spacing:0;}
-
-  .modal-overlay{
-    position:fixed;inset:0;background:rgba(0,0,0,.75);
-    display:none;align-items:center;justify-content:center;z-index:100;padding:20px;
-    backdrop-filter:blur(4px);
-  }
-  .modal-overlay.open{display:flex;}
-  .modal{
-    background:var(--panel);border:1px solid var(--panel-edge);border-radius:12px;
-    width:100%;max-width:500px;max-height:92vh;display:flex;flex-direction:column;
-    box-shadow:0 24px 60px -20px rgba(0,0,0,.8);
-  }
-  .modal-header{
-    display:flex;justify-content:space-between;align-items:center;
-    padding:20px 24px;border-bottom:1px solid var(--panel-edge);
-    font-size:17px;font-weight:700;flex-shrink:0;
-  }
-  .modal-close{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;padding:0;line-height:1;transition:color .15s;}
-  .modal-close:hover{color:var(--text);}
-  .modal-body{padding:20px 24px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:12px;}
-  .modal-footer{padding:16px 24px;border-top:1px solid var(--panel-edge);display:flex;gap:10px;justify-content:flex-end;flex-shrink:0;}
-
-  .form-group{display:flex;flex-direction:column;gap:5px;}
-  .form-group label{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);}
-  .form-group input{
-    background:var(--bg);border:1px solid var(--panel-edge);color:var(--text);
-    padding:9px 13px;border-radius:7px;font-size:14px;font-family:'Noto Sans KR',sans-serif;
-    transition:border-color .15s;outline:none;
-  }
-  .form-group input:focus{border-color:var(--hmi-cyan);}
-  .form-divider{border:none;border-top:1px solid var(--panel-edge);margin:2px 0;}
-  .form-section{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--hmi-cyan);}
-  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-
-  .val-wrap{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
-  .no-edit-tag{font-size:9px;font-weight:700;color:#c0392b;font-family:var(--mono);letter-spacing:.04em;margin-top:2px;line-height:1;}
-  input.val.no-edit,input.val.no-edit[readonly]{background:#ffd5d5 !important;border-color:#e05555 !important;color:#7a1a1a !important;box-shadow:0 0 0 1px rgba(224,85,85,.2) !important;}
-
+  .back{position:fixed;top:18px;left:18px;color:var(--muted);font-family:var(--mono);font-size:12px;text-decoration:none;z-index:30;}
   footer{text-align:center;padding:30px 20px 50px;font-family:var(--mono);font-size:11px;letter-spacing:.15em;color:#555b62;}
 
   @media(max-width:540px){
-    main{padding:0 10px;}
-    .hmi-screen{padding:10px;}
-    .hmi-grid{gap:5px;}
-    .hmi-col{padding:8px;gap:12px;}
-    .hmi-title{font-size:18px;}
-    .hmi-go{font-size:12px;padding:4px 9px;}
-    .hmi-bar{font-size:10px;padding:6px 10px;}
-    .hmi-bar .val{font-size:11px;width:52px;padding:1px 5px;}
-    .hmi-col-header{font-size:9.5px;padding:4px 2px;}
-    .hmi-row{font-size:10.5px;gap:4px;}
-    .hmi-row .lab small{font-size:8.5px;}
-    .hmi-row .val{font-size:11px;padding:3px 4px;width:46px;}
-    .form-grid{grid-template-columns:1fr;}
-    .toolbar{gap:10px;}
+    main{grid-template-columns:1fr;}
   }
 </style>
 </head>
 <body>
 
-<a href="index.html" style="position:fixed;top:18px;left:18px;color:var(--muted);font-family:var(--mono);font-size:12px;text-decoration:none;z-index:30;">← 처음으로</a>
+<a href="index.html" class="back">← 처음으로</a>
 
 <header>
-  <div class="eyebrow">YKHMI · 자동 화면 · 충진기</div>
-  <h1>충진기 <span>세팅값</span> 가이드</h1>
-  <p class="sub">스톤오일 등 충진기 세팅값입니다. 직접 품목을 추가하고 값을 입력해주세요.</p>
-  <div class="fb-status">
-    <div class="fb-dot" id="fbDot"></div>
-    <span id="fbStatusText">연결 중...</span>
-  </div>
+  <div class="eyebrow">YKHMI · 충진기</div>
+  <h1>충진기 <span>구분</span> 선택</h1>
+  <p class="sub">2구(수동) 또는 6구(자동) 중 선택하세요.</p>
 </header>
 
-<div class="toolbar">
-  <div class="toolbar-left">
-    <div>
-      <div class="selector-label">생산 품목</div>
-      <div class="dropdown" id="dropdown">
-        <button class="dropdown-trigger" id="prodTrigger">
-          <span id="triggerLabel" style="color:var(--muted);">품목 로딩 중...</span>
-          <span class="chev">▾</span>
-        </button>
-        <div class="dropdown-menu" id="prodMenu"></div>
-      </div>
-    </div>
-    <button class="btn primary" id="addBtn" style="margin-top:26px;">+ 새 품목</button>
-  </div>
-  <div class="toolbar-right">
-    <button class="btn danger" id="deleteBtn" style="display:none;">삭제</button>
-    <button class="btn" id="editToggle" style="display:none;">수정</button>
-  </div>
-</div>
+<main>
+  <a class="card" href="filling-manual.html">
+    <div class="icon">🅰️</div>
+    <h2>2구 (수동)</h2>
+    <p>2채널 수동 충진기 세팅값</p>
+    <span class="tag">바로가기</span>
+  </a>
 
-<main id="mainArea">
-  <div class="state-box" id="stateBox">
-    <div class="icon">⏳</div>
-    <h2>데이터 로딩 중...</h2>
-  </div>
+  <a class="card" href="filling-auto.html">
+    <div class="icon">⚙️</div>
+    <h2>6구 (자동)</h2>
+    <p>6채널 자동 충진기 세팅값</p>
+    <span class="tag">바로가기</span>
+  </a>
 </main>
-
-<!-- 새 품목 추가 모달 -->
-<div class="modal-overlay" id="modalOverlay">
-  <div class="modal">
-    <div class="modal-header">
-      새 품목 추가
-      <button class="modal-close" id="modalClose">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-grid">
-        <div class="form-group">
-          <label>용량/구분 (예: 500ml)</label>
-          <input type="text" id="fMl" placeholder="500ml">
-        </div>
-        <div class="form-group">
-          <label>품목명 (예: 스톤오일)</label>
-          <input type="text" id="fName" placeholder="스톤오일">
-        </div>
-      </div>
-      <hr class="form-divider">
-      <div class="form-section">상단 바</div>
-      <div class="form-grid">
-        <div class="form-group"><label>신호 필터링</label><input type="text" id="f_signal_filter" value="0.30"></div>
-        <div class="form-group"><label>충진 속도</label><input type="text" id="f_transport_speed" value="15.00"></div>
-      </div>
-      <hr class="form-divider">
-      <div class="form-section">이송 설정</div>
-      <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr;">
-        <div class="form-group"><label>지연 분할</label><input type="text" id="f_delay_split" value="0.50"></div>
-        <div class="form-group"><label>간격을 두다</label><input type="text" id="f_interval" value="1.00"></div>
-        <div class="form-group"><label>노즐 후퇴 시간</label><input type="text" id="f_cap_clamp_retreat" value="0.20"></div>
-      </div>
-      <hr class="form-divider">
-      <div class="form-section">충진기 서브</div>
-      <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr;">
-        <div class="form-group"><label>충진량 보정</label><input type="text" id="f_smoke_tight" value="0.02"></div>
-        <div class="form-group"><label>지연 분사</label><input type="text" id="f_delay_press" value="0.28"></div>
-        <div class="form-group"><label>지연 정지</label><input type="text" id="f_delay_rise" value="0.30"></div>
-      </div>
-      <hr class="form-divider">
-      <div class="form-section">충진기 메인</div>
-      <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr;">
-        <div class="form-group"><label>지연 하강</label><input type="text" id="f_delay_clamp" value="0.40"></div>
-        <div class="form-group"><label>지연 충진</label><input type="text" id="f_delay_lock" value="0.10"></div>
-        <div class="form-group"><label>충진 완료 시간</label><input type="text" id="f_cap_time" value="0.31"></div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn" id="modalCancel">취소</button>
-      <button class="btn primary" id="modalSave">저장</button>
-    </div>
-  </div>
-</div>
 
 <footer>HERB&amp;LIVING · 충진·캡핑 라인 세팅 가이드</footer>
 
-<script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-import {
-  getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc,
-  doc, query, orderBy, getDocs, writeBatch
-} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-
-const firebaseConfig = {
-  apiKey:            "AIzaSyD4PTwFhFS6xZ4rJK4PAAChMHLqjrtZi1Q",
-  authDomain:        "machine-setting.firebaseapp.com",
-  databaseURL:       "https://machine-setting-default-rtdb.firebaseio.com",
-  projectId:         "machine-setting",
-  storageBucket:     "machine-setting.firebasestorage.app",
-  messagingSenderId: "376125834216",
-  appId:             "1:376125834216:web:ab127071bf484bb82c5a5d",
-  measurementId:     "G-KJQCF92VV3"
-};
-
-const COLLECTION = 'filling_products';
-
-const DEFAULTS = [
-  { ml:'500ml', name:'스톤오일', order:0, settings:{ signal_filter:'0.30', transport_speed:'15.00', delay_split:'0.50', interval:'1.00', cap_clamp_retreat:'0.20', smoke_tight:'0.02', delay_press:'0.28', delay_rise:'0.30', delay_clamp:'0.40', delay_lock:'0.10', cap_time:'0.31' } },
-];
-
-const MODAL_KEYS = [
-  'signal_filter','transport_speed',
-  'delay_split','interval','cap_clamp_retreat',
-  'smoke_tight','delay_press','delay_rise',
-  'delay_clamp','delay_lock','cap_time'
-];
-
-const NO_EDIT_DEFAULTS = {
-  signal_filter:    '0.30',
-  transport_speed:  '15.00',
-  delay_split:      '0.50',
-  cap_clamp_retreat:'0.20',
-  smoke_tight:      '0.02',
-};
-
-let products = [];
-let activeId = null;
-let isEditing = false;
-let db = null;
-
-const fbDot        = document.getElementById('fbDot');
-const fbStatusText = document.getElementById('fbStatusText');
-const mainArea     = document.getElementById('mainArea');
-const stateBox     = document.getElementById('stateBox');
-const prodMenu     = document.getElementById('prodMenu');
-const triggerLabel = document.getElementById('triggerLabel');
-const dropdown     = document.getElementById('dropdown');
-const editToggle   = document.getElementById('editToggle');
-const deleteBtn    = document.getElementById('deleteBtn');
-const modalOverlay = document.getElementById('modalOverlay');
-
-function setFbStatus(state) {
-  fbDot.className = 'fb-dot ' + state;
-  fbStatusText.textContent = state === 'connected' ? 'Firebase 연결됨' : state === 'error' ? '연결 오류' : '연결 중...';
-}
-
-initFirebase();
-
-async function initFirebase() {
-  try {
-    const app = initializeApp(firebaseConfig);
-    db = getFirestore(app);
-    await seedIfEmpty();
-    startListener();
-  } catch(e) {
-    setFbStatus('error');
-    stateBox.innerHTML = `<div class="icon">❌</div><h2>Firebase 오류</h2><p>${e.message}</p>`;
-  }
-}
-
-async function seedIfEmpty() {
-  const q = query(collection(db,COLLECTION), orderBy('order','asc'));
-  const snap = await getDocs(q);
-  if (snap.empty) {
-    const batch = writeBatch(db);
-    DEFAULTS.forEach(p => batch.set(doc(collection(db,COLLECTION)), { ...p, createdAt: new Date() }));
-    await batch.commit();
-  }
-}
-
-function startListener() {
-  const q = query(collection(db,COLLECTION), orderBy('order','asc'));
-  onSnapshot(q, snap => {
-    setFbStatus('connected');
-    products = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    stateBox?.remove();
-    if (!activeId || !products.find(p => p.id === activeId)) {
-      activeId = products[0]?.id || null;
-    }
-    renderDropdown();
-    renderPanels();
-    updateToolbar();
-  }, err => {
-    setFbStatus('error');
-    console.error(err);
-  });
-}
-
-function esc(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function renderDropdown() {
-  prodMenu.innerHTML = '';
-  products.forEach(p => {
-    const btn = document.createElement('button');
-    btn.className = 'dropdown-item' + (p.id === activeId ? ' active' : '');
-    btn.dataset.id = p.id;
-    btn.innerHTML = `<span class="ml">${esc(p.ml)}</span>${esc(p.name)}`;
-    btn.addEventListener('click', () => selectProduct(p.id));
-    prodMenu.appendChild(btn);
-  });
-}
-
-function renderPanels() {
-  mainArea.querySelectorAll('.panel').forEach(el => el.remove());
-  products.forEach(p => {
-    const s = p.settings || {};
-    const section = document.createElement('section');
-    section.className = 'panel' + (p.id === activeId ? ' active' : '');
-    section.id = 'panel_' + p.id;
-    section.innerHTML = `
-      <div class="hmi-screen">
-        <div class="hmi-top">
-          <div class="hmi-go">가동</div>
-          <div class="hmi-title">자동</div>
-        </div>
-        <div class="hmi-bar">
-          <div class="field">신호 필터링 ${valWrap('signal_filter', s.signal_filter||'0.00')}</div>
-          <div class="field">충진 속도 ${valWrap('transport_speed', s.transport_speed||'0.00')}</div>
-        </div>
-        <div class="hmi-grid">
-          <div class="hmi-col">
-            <div class="hmi-col-header">이송 설정</div>
-            ${row('delay_split','지연 분할','',s)}
-            ${row('interval','간격을 두다','',s)}
-            ${row('cap_clamp_retreat','노즐 후퇴 시간','',s)}
-          </div>
-          <div class="hmi-col">
-            <div class="hmi-col-header">충진기 서브</div>
-            ${row('smoke_tight','충진량 보정','',s)}
-            ${row('delay_press','지연 분사','',s)}
-            ${row('delay_rise','지연 정지','',s)}
-          </div>
-          <div class="hmi-col">
-            <div class="hmi-col-header">충진기 메인</div>
-            ${row('delay_clamp','지연 하강','',s)}
-            ${row('delay_lock','지연 충진','',s)}
-            ${row('cap_time','충진 완료 시간','',s)}
-          </div>
-        </div>
-      </div>
-      <div class="ml-badge"><span><b>${esc(p.ml)}</b> ${esc(p.name)}</span></div>`;
-    mainArea.appendChild(section);
-  });
-  if (isEditing) applyEditState(true);
-  mainArea.querySelectorAll('input.val[data-key]').forEach(inp => {
-    if (inp.dataset.key in NO_EDIT_DEFAULTS) {
-      inp.addEventListener('input', e => updateNoEdit(e.target));
-    }
-  });
-}
-
-function updateNoEdit(inp) {
-  const isDefault = NO_EDIT_DEFAULTS[inp.dataset.key] === inp.value.trim();
-  inp.classList.toggle('no-edit', isDefault);
-  const tag = inp.closest('.val-wrap')?.querySelector('.no-edit-tag');
-  if (tag) tag.style.display = isDefault ? '' : 'none';
-}
-
-function valWrap(key, val) {
-  const isNoEdit = (key in NO_EDIT_DEFAULTS) && val === NO_EDIT_DEFAULTS[key];
-  return `<div class="val-wrap">
-    <input class="val${isNoEdit?' no-edit':''}" type="text" inputmode="decimal" data-key="${key}" value="${esc(val)}" readonly>
-    ${key in NO_EDIT_DEFAULTS ? `<span class="no-edit-tag" style="${isNoEdit?'':'display:none'}">수정 X</span>` : ''}
-  </div>`;
-}
-
-function row(key, label, sub, s) {
-  const val = s[key] || '0.00';
-  return `<div class="hmi-row">
-    <span class="lab"><span class="orig">${esc(label)}</span>${sub ? `<small>${esc(sub)}</small>` : ''}</span>
-    ${valWrap(key, val)}
-  </div>`;
-}
-
-function updateToolbar() {
-  const hasProduct = !!activeId;
-  editToggle.style.display = hasProduct ? 'inline-block' : 'none';
-  deleteBtn.style.display  = hasProduct ? 'inline-block' : 'none';
-  if (activeId) {
-    const p = products.find(x => x.id === activeId);
-    if (p) triggerLabel.innerHTML = `<span class="ml">${esc(p.ml)}</span>${esc(p.name)}`;
-  } else {
-    triggerLabel.textContent = '품목 없음';
-  }
-}
-
-function selectProduct(id) {
-  if (isEditing) saveCurrentPanel();
-  activeId = id;
-  document.querySelectorAll('.panel').forEach(el => el.classList.remove('active'));
-  document.getElementById('panel_' + id)?.classList.add('active');
-  document.querySelectorAll('.dropdown-item').forEach(el => {
-    el.classList.toggle('active', el.dataset.id === id);
-  });
-  const p = products.find(x => x.id === id);
-  if (p) triggerLabel.innerHTML = `<span class="ml">${esc(p.ml)}</span>${esc(p.name)}`;
-  dropdown.classList.remove('open');
-  if (isEditing) applyEditState(true);
-}
-
-function applyEditState(editing) {
-  const panel = document.getElementById('panel_' + activeId);
-  if (!panel) return;
-  panel.querySelectorAll('input.val').forEach(inp => {
-    if (editing) inp.removeAttribute('readonly');
-    else inp.setAttribute('readonly','');
-  });
-}
-
-async function saveCurrentPanel() {
-  if (!activeId || !db) return;
-  const panel = document.getElementById('panel_' + activeId);
-  if (!panel) return;
-  const settings = {};
-  panel.querySelectorAll('input.val[data-key]').forEach(inp => {
-    settings[inp.dataset.key] = inp.value;
-  });
-  await updateDoc(doc(db,COLLECTION, activeId), { settings }).catch(console.error);
-}
-
-document.getElementById('prodTrigger').addEventListener('click', e => {
-  e.stopPropagation();
-  dropdown.classList.toggle('open');
-});
-document.addEventListener('click', e => {
-  if (!dropdown.contains(e.target)) dropdown.classList.remove('open');
-});
-
-editToggle.addEventListener('click', async () => {
-  isEditing = !isEditing;
-  editToggle.textContent = isEditing ? '저장' : '수정';
-  editToggle.classList.toggle('editing', isEditing);
-  applyEditState(isEditing);
-  if (!isEditing) await saveCurrentPanel();
-});
-
-deleteBtn.addEventListener('click', async () => {
-  if (!activeId || !db) return;
-  const p = products.find(x => x.id === activeId);
-  if (!p) return;
-  if (!confirm(`"${p.ml} ${p.name}" 품목을 삭제할까요?`)) return;
-  await deleteDoc(doc(db,COLLECTION, activeId)).catch(console.error);
-  activeId = null;
-  isEditing = false;
-  editToggle.textContent = '수정';
-  editToggle.classList.remove('editing');
-});
-
-document.getElementById('addBtn').addEventListener('click', () => {
-  document.getElementById('fMl').value = '';
-  document.getElementById('fName').value = '';
-  const def = DEFAULTS[0].settings;
-  MODAL_KEYS.forEach(k => {
-    const el = document.getElementById('f_' + k);
-    if (el) el.value = def[k] || '0.00';
-  });
-  modalOverlay.classList.add('open');
-  setTimeout(() => document.getElementById('fMl').focus(), 100);
-});
-
-[document.getElementById('modalClose'), document.getElementById('modalCancel')].forEach(btn => {
-  btn.addEventListener('click', () => modalOverlay.classList.remove('open'));
-});
-
-modalOverlay.addEventListener('click', e => {
-  if (e.target === modalOverlay) modalOverlay.classList.remove('open');
-});
-
-document.getElementById('modalSave').addEventListener('click', async () => {
-  const ml   = document.getElementById('fMl').value.trim();
-  const name = document.getElementById('fName').value.trim();
-  if (!ml || !name) { alert('용량/구분과 품목명을 모두 입력하세요.'); return; }
-
-  const settings = {};
-  MODAL_KEYS.forEach(k => {
-    const el = document.getElementById('f_' + k);
-    settings[k] = el?.value.trim() || '0.00';
-  });
-
-  try {
-    const ref = await addDoc(collection(db,COLLECTION), {
-      ml, name, settings,
-      order: Date.now(),
-      createdAt: new Date(),
-    });
-    activeId = ref.id;
-    modalOverlay.classList.remove('open');
-  } catch(e) {
-    alert('저장 실패: ' + e.message);
-  }
-});
-</script>
 </body>
 </html>
