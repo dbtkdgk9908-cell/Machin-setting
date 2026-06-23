@@ -411,10 +411,22 @@ async function initFirebase() {
     const app = initializeApp(firebaseConfig);
     db = getFirestore(app);
     await seedIfEmpty();
+    await fixMl();
     startListener();
   } catch(e) {
     setFbStatus('error');
     stateBox.innerHTML = `<div class="icon">❌</div><h2>Firebase 오류</h2><p>${e.message}</p>`;
+  }
+}
+
+async function fixMl() {
+  const mlMap = { '차량용':'230ml', '리필':'1050ml', '홈':'520ml' };
+  const snap = await getDocs(query(collection(db,'products'), orderBy('order','asc')));
+  for (const d of snap.docs) {
+    const correct = mlMap[d.data().name];
+    if (correct && d.data().ml !== correct) {
+      await updateDoc(doc(db,'products',d.id), { ml: correct });
+    }
   }
 }
 
