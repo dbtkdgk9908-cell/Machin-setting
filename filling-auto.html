@@ -287,7 +287,7 @@ const firebaseConfig = {
 const COLLECTION = 'filling_auto_products';
 
 const DEFAULTS = [
-  { ml:'500ml', name:'스톤오일', order:0, settings:{ filling_time:'00.60', waiting_time:'04.00', speed_1:'50', speed_2:'50', speed_3:'50', speed_4:'50', speed_5:'50', speed_6:'50' } },
+  { ml:'20ml', name:'스톤오일', order:0, settings:{ filling_time:'00.60', waiting_time:'04.00', speed_1:'50', speed_2:'50', speed_3:'50', speed_4:'50', speed_5:'50', speed_6:'50' } },
 ];
 
 const MODAL_KEYS = ['filling_time','waiting_time','speed_1','speed_2','speed_3','speed_4','speed_5','speed_6'];
@@ -334,6 +334,12 @@ async function seedIfEmpty() {
     const batch = writeBatch(db);
     DEFAULTS.forEach(p => batch.set(doc(collection(db,COLLECTION)), { ...p, createdAt: new Date() }));
     await batch.commit();
+  } else {
+    for (const d of snap.docs) {
+      if (d.data().ml === '500ml' && d.data().name === '스톤오일') {
+        await updateDoc(doc(db,COLLECTION,d.id), { ml:'20ml' });
+      }
+    }
   }
 }
 
